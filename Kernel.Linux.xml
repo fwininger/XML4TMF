@@ -40,8 +40,8 @@
 
 	<stateprovider analysisid="polymtl.kernel.linux.sp">
 		<head>
-			<tracetype id="%ctf" />
-			<tracetype id="%lttngkernel" />
+			<tracetype id="org.eclipse.linuxtools.tmf.ui.type.ctf" />
+			<tracetype id="org.eclipse.linuxtools.lttng2.kernel.tracetype" />
 			<view id="polymtl.kernel.view" />
 		</head>
 		<!-- StateValues -->
