@@ -1,0 +1,364 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ***************************************************************************
+ * Copyright (c) 2013 École Polytechnique de Montréal
+ * Copyright (c) 2013 Florian Wininger <florian.wininger@polymtl.ca>
+ *
+ * All rights reserved. This program and the accompanying materials are
+ * made available under the terms of the Eclipse Public License v1.0 which
+ * accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Florian Wininger - Initial API and implementation
+ *************************************************************************** -->
+<tmfxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="stateprovider.xsd">
+	<view id="org.eclipse.linuxtools.tmf.analysis.xml.sstimeview">
+		<head>
+			<analysis id="polymtl.kernel.windows.sp" />
+		</head>
+		<!-- StateValues -->
+		<stateValue name="PROCESS_STATUS_UNKNOWN" value="-1" color="#EEEEEE" />
+		<stateValue name="PROCESS_STATUS_WAIT_BLOCKED" value="0" color="#CCCCCC" />
+		<stateValue name="PROCESS_STATUS_RUN_USERMODE" value="1" color="#118811" />
+		<stateValue name="PROCESS_STATUS_RUN_SYSCALL" value="2" color="#0000EE" />
+		<stateValue name="PROCESS_STATUS_INTERRUPTED" value="3" color="#DDDD00" />
+		<stateValue name="PROCESS_STATUS_WAIT_FOR_CPU" value="0" color="#CCCCCC" />
+
+		<!-- Control Flow View -->
+		<line id="CPUs/*" display="Status" name="Exec_name" parent="PPID">
+			<!-- Options -->
+			<option name="PPID" path="PPID" />
+			<option name="TID" path="" />
+		</line>
+		<line id="Threads/*" display="Status" name="Exec_name" parent="PPID">
+			<!-- Options -->
+			<option name="PPID" path="PPID" />
+			<option name="TID" path="" />
+		</line>
+	</view>
+
+	<stateprovider analysisid="polymtl.kernel.windows.sp">
+		<head>
+			<tracetype id="org.eclipse.linuxtools.tmf.ui.type.ctf" />
+			<tracetype id="org.eclipse.linuxtools.lttng2.kernel.tracetype" />
+			<view id="org.eclipse.linuxtools.tmf.analysis.xml.sstimeview" />
+		</head>
+		<!-- StateValues -->
+		<stateValue name="CPU_STATUS_IDLE" value="0" />
+		<stateValue name="CPU_STATUS_RUN_USERMODE" value="1" />
+		<stateValue name="CPU_STATUS_RUN_SYSCALL" value="2" />
+		<stateValue name="CPU_STATUS_IRQ" value="3" />
+		<stateValue name="CPU_STATUS_SOFTIRQ" value="4" />
+
+		<stateValue name="PROCESS_STATUS_UNKNOWN" value="-1" />
+		<stateValue name="PROCESS_STATUS_WAIT_BLOCKED" value="0" />
+		<stateValue name="PROCESS_STATUS_RUN_USERMODE" value="1" />
+		<stateValue name="PROCESS_STATUS_RUN_SYSCALL" value="2" />
+		<stateValue name="PROCESS_STATUS_INTERRUPTED" value="3" />
+		<stateValue name="PROCESS_STATUS_WAIT_FOR_CPU" value="0" />
+
+		<stateValue name="SOFT_IRQ_RAISED" value="-2" />
+
+		<!-- Shortcut Variables -->
+		<location id="CurrentThread">
+			<attribute constant="Threads" />
+			<attribute type="query">
+				<attribute constant="CPUs" />
+				<attribute eventfield="cpuid" />
+				<attribute constant="Current_thread" />
+			</attribute>
+		</location>
+		<location id="EventProcess">
+			<attribute constant="Threads" />
+			<attribute eventfield="ProcessId" />
+		</location>
+		<location id="EventThread">
+			<attribute constant="Threads" />
+			<attribute eventfield="TThreadId" />
+		</location>
+		<location id="CurrentCPU">
+			<attribute constant="CPUs" />
+			<attribute eventfield="cpuid" />
+		</location>
+		<location id="newCurrentThread">
+			<attribute constant="Threads" />
+			<attribute eventfield="NewThreadId" />
+		</location>
+
+		<!-- case 1 : CSwitch : Fields: uint8 cpuid; uint32 NewThreadId; uint32 
+			OldThreadId; int8 NewThreadPriority; int8 OldThreadPriority; uint8 PreviousCState; 
+			int8 SpareByte; int8 OldThreadWaitReason; int8 OldThreadWaitMode; int8 OldThreadState; 
+			int8 OldThreadWaitIdealProcessor; uint32 NewThreadWaitTime; uint32 Reserved; -->
+		<eventHandler eventname="CSwitch">
+			<stateChange>
+				<attribute constant="Threads" />
+				<attribute eventfield="OldThreadId" />
+				<attribute constant="Status" />
+				<value int="$PROCESS_STATUS_WAIT_BLOCKED" />
+			</stateChange>
+			<stateChange>
+				<if>
+					<condition>
+						<attribute location="newCurrentThread" />
+						<attribute constant="System_call" />
+						<value type="null" />
+					</condition>
+				</if>
+				<then>
+					<attribute location="newCurrentThread" />
+					<attribute constant="Status" />
+					<value int="$PROCESS_STATUS_RUN_USERMODE" />
+				</then>
+				<else>
+					<attribute location="newCurrentThread" />
+					<attribute constant="Status" />
+					<value int="$PROCESS_STATUS_RUN_SYSCALL" />
+				</else>
+			</stateChange>
+			<stateChange>
+				<attribute location="newCurrentThread" />
+				<attribute constant="Exec_name" />
+				<value eventfield="NewThreadId" forcedtype="string" />
+			</stateChange>
+			<stateChange>
+				<attribute location="CurrentCPU" />
+				<attribute constant="Current_thread" />
+				<value eventfield="NewThreadId" forcedtype="int" />
+			</stateChange>
+			<stateChange>
+				<if>
+					<and>
+						<not>
+							<condition>
+								<eventfield name="NewThreadId" />
+								<value long="0" />
+							</condition>
+						</not>
+						<condition>
+							<attribute location="newCurrentThread" />
+							<attribute constant="System_call" />
+							<value type="null" />
+						</condition>
+					</and>
+				</if>
+				<then>
+					<attribute location="CurrentCPU" />
+					<attribute constant="Status" />
+					<value int="$CPU_STATUS_RUN_USERMODE" />
+				</then>
+			</stateChange>
+			<stateChange>
+				<if>
+					<and>
+						<not>
+							<condition>
+								<eventfield name="NewThreadId" />
+								<value long="0" />
+							</condition>
+						</not>
+						<not>
+							<condition>
+								<attribute location="newCurrentThread" />
+								<attribute constant="System_call" />
+								<value type="null" />
+							</condition>
+						</not>
+					</and>
+				</if>
+				<then>
+					<attribute location="CurrentCPU" />
+					<attribute constant="Status" />
+					<value int="$CPU_STATUS_RUN_SYSCALL" />
+				</then>
+			</stateChange>
+			<stateChange>
+				<if>
+					<condition>
+						<eventfield name="NewThreadId" />
+						<value long="0" />
+					</condition>
+				</if>
+				<then>
+					<attribute location="CurrentCPU" />
+					<attribute constant="Status" />
+					<value int="$CPU_STATUS_IDLE" />
+				</then>
+			</stateChange>
+		</eventHandler>
+		<!-- case 2 : DCEnd -->
+		<eventHandler eventname="DCEnd">
+			<stateChange>
+				<if>
+					<not>
+						<condition>
+							<eventfield name="ImageFileName" />
+							<value type="null" />
+						</condition>
+					</not>
+				</if>
+				<then>
+					<attribute location="EventProcess" />
+					<attribute constant="Exec_name" />
+					<value eventfield="ImageFileName" />
+				</then>
+			</stateChange>
+			<stateChange>
+				<attribute location="EventProcess" />
+				<attribute constant="PPID" />
+				<value eventfield="ParentId" forcedtype="int" />
+			</stateChange>
+			<stateChange>
+				<attribute location="EventThread" />
+				<attribute constant="PPID" />
+				<value eventfield="ProcessId" forcedtype="int" />
+			</stateChange>
+
+		</eventHandler>
+		<!-- case 3 : End -->
+		<eventHandler eventname="End">
+			<stateChange>
+				<if>
+					<not>
+						<condition>
+							<eventfield name="ImageFileName" />
+							<value type="null" />
+						</condition>
+					</not>
+				</if>
+				<then>
+					<attribute location="EventProcess" />
+					<attribute constant="Exec_name" />
+					<value eventfield="ImageFileName" />
+				</then>
+			</stateChange>
+			<stateChange>
+				<attribute location="EventProcess" />
+				<attribute constant="PPID" />
+				<value eventfield="ParentId" forcedtype="int" />
+			</stateChange>
+			<stateChange>
+				<attribute location="EventThread" />
+				<attribute constant="PPID" />
+				<value eventfield="ProcessId" forcedtype="int" />
+			</stateChange>
+			<stateChange>
+				<attribute location="EventProcess" />
+				<attribute constant="Status" />
+				<value int="0" />
+			</stateChange>
+		</eventHandler>
+		<!-- case 4 : DCStart -->
+		<eventHandler eventname="DCStart">
+			<stateChange>
+				<if>
+					<not>
+						<condition>
+							<eventfield name="ImageFileName" />
+							<value type="null" />
+						</condition>
+					</not>
+				</if>
+				<then>
+					<attribute location="EventProcess" />
+					<attribute constant="Exec_name" />
+					<value eventfield="ImageFileName" />
+				</then>
+			</stateChange>
+			<stateChange>
+				<attribute location="EventProcess" />
+				<attribute constant="PPID" />
+				<value eventfield="ParentId" forcedtype="int" />
+			</stateChange>
+			<stateChange>
+				<attribute location="EventThread" />
+				<attribute constant="PPID" />
+				<value eventfield="ProcessId" forcedtype="int" />
+			</stateChange>
+			<stateChange>
+				<attribute location="EventThread" />
+				<attribute constant="Exec_name" />
+				<value eventfield="TThreadID" forcedtype="string" />
+			</stateChange>
+			<stateChange>
+				<attribute location="EventThread" />
+				<attribute constant="Status" />
+				<value int="$PROCESS_STATUS_WAIT_BLOCKED" />
+			</stateChange>
+			<stateChange>
+				<attribute location="EventProcess" />
+				<attribute constant="Status" />
+				<value int="$PROCESS_STATUS_WAIT_BLOCKED" />
+			</stateChange>
+		</eventHandler>
+		<!-- case 5 : Start -->
+		<eventHandler eventname="Start">
+			<stateChange>
+				<attribute location="EventThread" />
+				<attribute constant="Exec_name" />
+				<value eventfield="TThreadID" forcedtype="string" />
+			</stateChange>
+			<stateChange>
+				<if>
+					<not>
+						<condition>
+							<eventfield name="ImageFileName" />
+							<value type="null" />
+						</condition>
+					</not>
+				</if>
+				<then>
+					<attribute location="EventProcess" />
+					<attribute constant="Exec_name" />
+					<value eventfield="ImageFileName" />
+				</then>
+			</stateChange>
+			<stateChange>
+				<attribute location="EventProcess" />
+				<attribute constant="PPID" />
+				<value eventfield="ParentId" forcedtype="int" />
+			</stateChange>
+			<stateChange>
+				<attribute location="EventThread" />
+				<attribute constant="PPID" />
+				<value eventfield="ProcessId" forcedtype="int" />
+			</stateChange>
+			<stateChange>
+				<attribute location="EventThread" />
+				<attribute constant="Status" />
+				<value int="$PROCESS_STATUS_WAIT_BLOCKED" />
+			</stateChange>
+			<stateChange>
+				<attribute location="EventProcess" />
+				<attribute constant="Status" />
+				<value int="$PROCESS_STATUS_WAIT_BLOCKED" />
+			</stateChange>
+		</eventHandler>
+		<!-- case 6 : SysClEnter -->
+		<eventHandler eventname="SysClEnter">
+			<stateChange>
+				<attribute location="CurrentThread" />
+				<attribute constant="Status" />
+				<value int="$PROCESS_STATUS_RUN_SYSCALL" />
+			</stateChange>
+			<stateChange>
+				<attribute location="CurrentCPU" />
+				<attribute constant="Status" />
+				<value int="$CPU_STATUS_RUN_SYSCALL" />
+			</stateChange>
+		</eventHandler>
+		<!-- case 7 : SysClExit -->
+		<eventHandler eventname="SysClExit">
+			<stateChange>
+				<attribute location="CurrentThread" />
+				<attribute constant="Status" />
+				<value int="$PROCESS_STATUS_RUN_USERMODE" />
+			</stateChange>
+			<stateChange>
+				<attribute location="CurrentCPU" />
+				<attribute constant="Status" />
+				<value int="$CPU_STATUS_RUN_USERMODE" />
+			</stateChange>
+		</eventHandler>
+	</stateprovider>
+</tmfxml>
