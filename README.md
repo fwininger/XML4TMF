@@ -1,4 +1,10 @@
 XML4TMF
 =======
 
-Examples for XML stateprovider in the Tracing and Monitoring Framework
+Examples of XML stateproviders for the Tracing and Monitoring Framework.
+
+=======
+
+Links:
+
+LinuxTools Project (TMF) : http://www.eclipse.org/linuxtools/projectPages/lttng/
