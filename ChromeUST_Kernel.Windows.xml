@@ -366,7 +366,7 @@
 				<if>
 					<not>
 						<condition>
-							<eventfield name="function" />
+							<eventfield name="name" />
 							<value string="MessageLoop::PostTask" />
 						</condition>
 					</not>
@@ -385,7 +385,7 @@
 				<if>
 					<not>
 						<condition>
-							<eventfield name="function" />
+							<eventfield name="name" />
 							<value string="MessageLoop::PostTask" />
 						</condition>
 					</not>
@@ -394,7 +394,7 @@
 					<attribute constant="Threads" />
 					<attribute eventfield="context.tid" />
 					<attribute constant="functionStack" />
-					<value stack="push" eventfield="function" />
+					<value stack="push" eventfield="name" />
 				</then>
 			</stateChange>
 			<stateChange>
