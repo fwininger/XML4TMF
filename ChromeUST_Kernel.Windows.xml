@@ -65,7 +65,7 @@
 			<attribute constant="Threads" />
 			<attribute type="query">
 				<attribute constant="CPUs" />
-				<attribute eventfield="cpuid" />
+				<attribute eventfield="context.cpu_id" />
 				<attribute constant="Current_thread" />
 			</attribute>
 		</location>
@@ -79,14 +79,14 @@
 		</location>
 		<location id="CurrentCPU">
 			<attribute constant="CPUs" />
-			<attribute eventfield="cpuid" />
+			<attribute eventfield="context.cpu_id" />
 		</location>
 		<location id="newCurrentThread">
 			<attribute constant="Threads" />
 			<attribute eventfield="NewThreadId" />
 		</location>
 
-		<!-- case 1 : CSwitch : Fields: uint8 cpuid; uint32 NewThreadId; uint32 
+		<!-- case 1 : CSwitch : Fields: uint32 NewThreadId; uint32 
 			OldThreadId; int8 NewThreadPriority; int8 OldThreadPriority; uint8 PreviousCState; 
 			int8 SpareByte; int8 OldThreadWaitReason; int8 OldThreadWaitMode; int8 OldThreadState; 
 			int8 OldThreadWaitIdealProcessor; uint32 NewThreadWaitTime; uint32 Reserved; -->
