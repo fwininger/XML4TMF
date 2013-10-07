@@ -92,29 +92,66 @@
 			int8 OldThreadWaitIdealProcessor; uint32 NewThreadWaitTime; uint32 Reserved; -->
 		<eventHandler eventname="CSwitch">
 			<stateChange>
-				<attribute constant="Threads" />
-				<attribute eventfield="OldThreadId" />
-				<attribute constant="Status" />
-				<value int="$PROCESS_STATUS_WAIT_BLOCKED" />
+				<if>
+					<not>
+						<condition>
+							<eventfield name="OldThreadId" />
+							<value long="0" />
+						</condition>
+					</not>
+				</if>
+				<then>
+					<attribute constant="Threads" />
+					<attribute eventfield="OldThreadId" />
+					<attribute constant="Status" />
+					<value int="$PROCESS_STATUS_WAIT_BLOCKED" />
+				</then>
 			</stateChange>
 			<stateChange>
 				<if>
-					<condition>
-						<attribute location="newCurrentThread" />
-						<attribute constant="System_call" />
-						<value type="null" />
-					</condition>
+					<and>
+						<not>
+							<condition>
+								<eventfield name="NewThreadId" />
+								<value long="0" />
+							</condition>
+						</not>
+						<condition>
+							<attribute location="newCurrentThread" />
+							<attribute constant="System_call" />
+							<value type="null" />
+						</condition>
+					</and>
 				</if>
 				<then>
 					<attribute location="newCurrentThread" />
 					<attribute constant="Status" />
 					<value int="$PROCESS_STATUS_RUN_USERMODE" />
 				</then>
-				<else>
+			</stateChange>
+			<stateChange>
+				<if>
+					<and>
+						<not>
+							<condition>
+								<eventfield name="NewThreadId" />
+								<value long="0" />
+							</condition>
+						</not>
+						<not>
+							<condition>
+								<attribute location="newCurrentThread" />
+								<attribute constant="System_call" />
+								<value type="null" />
+							</condition>
+						</not>
+					</and>
+				</if>
+				<then>
 					<attribute location="newCurrentThread" />
 					<attribute constant="Status" />
 					<value int="$PROCESS_STATUS_RUN_SYSCALL" />
-				</else>
+				</then>
 			</stateChange>
 			<stateChange>
 				<attribute location="newCurrentThread" />
