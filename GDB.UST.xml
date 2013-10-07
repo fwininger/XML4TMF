@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- ***************************************************************************
+ * Copyright (c) 2013 Ecole Polytechnique de Montreal
+ * Copyright (c) 2013 Florian Wininger <florian.wininger@polymtl.ca>
+ * Copyright (c) 2013 Simon Marchi <simon.marchi@polymtl.ca>
+ *
+ * All rights reserved. This program and the accompanying materials are
+ * made available under the terms of the Eclipse Public License v1.0 which
+ * accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *   Florian Wininger
+ *	 Simon Marchi
+ *************************************************************************** -->
+<tmfxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="xmldefinition.xsd">
+
+	<view id="org.eclipse.linuxtools.tmf.analysis.xml.sstimeview">
+		<head>
+			<analysis id="polymtl.gdb.ust.sp" />
+		</head>
+		<!-- StateValues -->
+		<stateValue name="INF_RUNNING" value="1" color="#118811" />
+		<stateValue name="INF_STOPPED" value="0" color="#CCCCCC" />
+
+		<!-- Control Flow View -->
+		<line id="gdb/*" display="Status" />
+		
+	</view>
+	<stateprovider analysisid="polymtl.gdb.ust.sp">
+		<head>
+			<tracetype id="org.eclipse.linuxtools.tmf.ui.type.ctf" />
+			<view id="org.eclipse.linuxtools.tmf.analysis.xml.sstimeview" />
+		</head>
+
+		<!-- StateValues -->
+		<stateValue name="INF_RUNNING" value="1" />
+		<stateValue name="INF_STOPPED" value="0" />
+
+		<location id="GDB_Status">
+			<attribute constant="gdb" />
+			<attribute eventfield="pid" />
+			<attribute constant="Status" />
+		</location>
+
+		<eventHandler eventname="gdb:inf_forked">
+			<stateChange>
+				<attribute location="GDB_Status" />
+				<value int="$INF_RUNNING" />
+			</stateChange>
+		</eventHandler>
+		<eventHandler eventname="gdb:inf_stop">
+			<stateChange>
+				<attribute location="GDB_Status" />
+				<value int="$INF_STOPPED" />
+			</stateChange>
+		</eventHandler>
+		<eventHandler eventname="gdb:inf_cont">
+			<stateChange>
+				<attribute location="GDB_Status" />
+				<value int="$INF_RUNNING" />
+			</stateChange>
+		</eventHandler>
+		<eventHandler eventname="gdb:inf_step">
+			<stateChange>
+				<attribute location="GDB_Status" />
+				<value int="$INF_RUNNING" />
+			</stateChange>
+		</eventHandler>
+		<eventHandler eventname="gdb:pgspace_switch">
+			<stateChange>
+				<attribute constant="pgspace" />
+				<attribute constant="current_pgspace" />
+				<value eventfield="num" />
+			</stateChange>
+		</eventHandler>
+	</stateprovider>
+</tmfxml>
