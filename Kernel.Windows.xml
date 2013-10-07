@@ -154,9 +154,18 @@
 				</then>
 			</stateChange>
 			<stateChange>
-				<attribute location="newCurrentThread" />
-				<attribute constant="Exec_name" />
-				<value eventfield="NewThreadId" forcedtype="string" />
+				<if>
+					<condition>
+						<attribute location="newCurrentThread" />
+						<attribute constant="Exec_name" />
+						<value type="null" />
+					</condition>
+				</if>
+				<then>
+					<attribute location="newCurrentThread" />
+					<attribute constant="Exec_name" />
+					<value eventfield="NewThreadId" forcedtype="string" />
+				</then>
 			</stateChange>
 			<stateChange>
 				<attribute location="CurrentCPU" />

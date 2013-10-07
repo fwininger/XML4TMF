@@ -154,9 +154,18 @@
 				</then>
 			</stateChange>
 			<stateChange>
-				<attribute location="newCurrentThread" />
-				<attribute constant="Exec_name" />
-				<value eventfield="NewThreadId" forcedtype="string" />
+				<if>
+					<condition>
+						<attribute location="newCurrentThread" />
+						<attribute constant="Exec_name" />
+						<value type="null" />
+					</condition>
+				</if>
+				<then>
+					<attribute location="newCurrentThread" />
+					<attribute constant="Exec_name" />
+					<value eventfield="NewThreadId" forcedtype="string" />
+				</then>
 			</stateChange>
 			<stateChange>
 				<attribute location="CurrentCPU" />
@@ -456,6 +465,23 @@
 					<attribute eventfield="context.tid" />
 					<attribute constant="ThreadName" />
 					<value eventfield="thread" />
+				</then>
+			</stateChange>
+		</eventHandler>
+		<!-- case 10 : ChromeInstant -->
+		<eventHandler eventname="ChromeInstant">
+			<stateChange>
+				<if>
+					<condition>
+						<eventfield name="name" />
+						<value string="ThreadName" />
+					</condition>
+				</if>
+				<then>
+					<attribute constant="Threads" />
+					<attribute eventfield="context.tid" />
+					<attribute constant="Exec_name" />
+					<value eventfield="arg2_value" />
 				</then>
 			</stateChange>
 		</eventHandler>
