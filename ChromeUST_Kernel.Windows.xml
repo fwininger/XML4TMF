@@ -19,11 +19,12 @@
 		</head>
 		<!-- StateValues -->
 		<stateValue name="PROCESS_STATUS_UNKNOWN" value="-1" color="#EEEEEE" />
-		<stateValue name="PROCESS_STATUS_WAIT_BLOCKED" value="0" color="#CCCCCC" />
+		<stateValue name="PROCESS_STATUS_WAIT_BLOCKED" value="0" color="#fff2bd" />
 		<stateValue name="PROCESS_STATUS_RUN_USERMODE" value="1" color="#118811" />
 		<stateValue name="PROCESS_STATUS_RUN_SYSCALL" value="2" color="#0000EE" />
 		<stateValue name="PROCESS_STATUS_INTERRUPTED" value="3" color="#DDDD00" />
-		<stateValue name="PROCESS_STATUS_WAIT_FOR_CPU" value="0" color="#CCCCCC" />
+		<stateValue name="PROCESS_STATUS_WAIT_FOR_CPU" value="0" color="#fff2bd" />
+		<stateValue name="TASK" value="10" color="#cf0000" />
 
 		<!-- Control Flow View -->
 		<line id="CPUs/*" display="Status" name="Exec_name" parent="PPID">
@@ -392,6 +393,11 @@
 				<attribute constant="Status" />
 				<value int="$CPU_STATUS_RUN_SYSCALL" />
 			</stateChange>
+			<stateChange>
+				<attribute location="CurrentThread" />
+				<attribute constant="System_call" />
+				<value eventfield="SysCallAddress" forcedtype="string" />
+			</stateChange>
 		</eventHandler>
 		<!-- case 7 : SysClExit -->
 		<eventHandler eventname="SysClExit">
@@ -404,6 +410,11 @@
 				<attribute location="CurrentCPU" />
 				<attribute constant="Status" />
 				<value int="$CPU_STATUS_RUN_USERMODE" />
+			</stateChange>
+			<stateChange>
+				<attribute location="CurrentThread" />
+				<attribute constant="System_call" />
+				<value type="null" />
 			</stateChange>
 		</eventHandler>
 		<!-- case 8 : ChromeEnd -->
@@ -423,6 +434,11 @@
 					<attribute constant="functionStack" />
 					<value stack="pop" />
 				</then>
+				<else>
+					<attribute constant="Task" />
+					<attribute eventfield="id" />
+					<value eventfield="context.tid" forcedtype="int" />
+				</else>
 			</stateChange>
 		</eventHandler>
 		<!-- case 9 : ChromeBegin -->
@@ -442,6 +458,11 @@
 					<attribute constant="functionStack" />
 					<value stack="push" eventfield="name" />
 				</then>
+				<else>
+					<attribute constant="Task" />
+					<attribute eventfield="id" />
+					<value eventfield="context.tid" forcedtype="int" />
+				</else>
 			</stateChange>
 			<stateChange>
 				<if>
