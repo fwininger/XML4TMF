@@ -23,7 +23,7 @@
 		<stateValue name="PROCESS_STATUS_RUN_USERMODE" value="1" color="#118811" />
 		<stateValue name="PROCESS_STATUS_RUN_SYSCALL" value="2" color="#0000EE" />
 		<stateValue name="PROCESS_STATUS_INTERRUPTED" value="3" color="#DDDD00" />
-		<stateValue name="PROCESS_STATUS_WAIT_FOR_CPU" value="0" color="#fff2bd" />
+		<stateValue name="PROCESS_STATUS_WAIT_FOR_CPU" value="4" color="#ffb94b" />
 		<stateValue name="TASK" value="10" color="#cf0000" />
 
 		<!-- Control Flow View -->
@@ -57,7 +57,7 @@
 		<stateValue name="PROCESS_STATUS_RUN_USERMODE" value="1" />
 		<stateValue name="PROCESS_STATUS_RUN_SYSCALL" value="2" />
 		<stateValue name="PROCESS_STATUS_INTERRUPTED" value="3" />
-		<stateValue name="PROCESS_STATUS_WAIT_FOR_CPU" value="0" />
+		<stateValue name="PROCESS_STATUS_WAIT_FOR_CPU" value="4" />
 
 		<stateValue name="SOFT_IRQ_RAISED" value="-2" />
 
@@ -94,18 +94,48 @@
 		<eventHandler eventname="CSwitch">
 			<stateChange>
 				<if>
-					<not>
-						<condition>
-							<eventfield name="OldThreadId" />
-							<value long="0" />
-						</condition>
-					</not>
+					<and>
+						<not>
+							<condition>
+								<eventfield name="OldThreadWaitReason" />
+								<value long="32" />
+							</condition>
+						</not>
+						<not>
+							<condition>
+								<eventfield name="OldThreadId" />
+								<value long="0" />
+							</condition>
+						</not>
+					</and>
 				</if>
 				<then>
 					<attribute constant="Threads" />
 					<attribute eventfield="OldThreadId" />
 					<attribute constant="Status" />
 					<value int="$PROCESS_STATUS_WAIT_BLOCKED" />
+				</then>
+			</stateChange>
+			<stateChange>
+				<if>
+					<and>
+						<condition>
+							<eventfield name="OldThreadWaitReason" />
+							<value long="32" />
+						</condition>
+						<not>
+							<condition>
+								<eventfield name="OldThreadId" />
+								<value long="0" />
+							</condition>
+						</not>
+					</and>
+				</if>
+				<then>
+					<attribute constant="Threads" />
+					<attribute eventfield="OldThreadId" />
+					<attribute constant="Status" />
+					<value int="$PROCESS_STATUS_WAIT_FOR_CPU" />
 				</then>
 			</stateChange>
 			<stateChange>
