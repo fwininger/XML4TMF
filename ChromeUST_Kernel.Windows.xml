@@ -15,7 +15,7 @@
 	xsi:noNamespaceSchemaLocation="stateprovider.xsd">
 	<view id="org.eclipse.linuxtools.tmf.analysis.xml.sstimeview">
 		<head>
-			<analysis id="polymtl.kernel.windows.sp" />
+			<analysis id="ChromeProc" />
 		</head>
 		<!-- StateValues -->
 		<stateValue name="PROCESS_STATUS_UNKNOWN" value="-1" color="#EEEEEE" />
@@ -39,7 +39,7 @@
 		</line>
 	</view>
 
-	<stateprovider analysisid="polymtl.kernel.windows.sp">
+	<stateprovider analysisid="ChromeProc">
 		<head>
 			<tracetype id="org.eclipse.linuxtools.tmf.ui.type.ctf" />
 			<tracetype id="org.eclipse.linuxtools.lttng2.kernel.tracetype" />
@@ -426,7 +426,7 @@
 			<stateChange>
 				<attribute location="CurrentThread" />
 				<attribute constant="System_call" />
-				<value eventfield="SysCallAddress" forcedtype="string" />
+				<value eventfield="syscall_name" forcedtype="string" />
 			</stateChange>
 		</eventHandler>
 		<!-- case 7 : SysClExit -->
