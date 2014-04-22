@@ -16,64 +16,68 @@
 <tmfxml xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:noNamespaceSchemaLocation="xmldefinition.xsd">
 
-	<view id="org.eclipse.linuxtools.tmf.analysis.xml.sstimeview">
+	<stateSystemView id="org.eclipse.linuxtools.tmf.analysis.xml.sstimeview">
 		<head>
 			<analysis id="polymtl.gdb.ust.sp" />
+			<label value="Example GDB View" />
 		</head>
 		<!-- StateValues -->
-		<stateValue name="INF_RUNNING" value="1" color="#118811" />
-		<stateValue name="INF_STOPPED" value="0" color="#CCCCCC" />
+		<definedValue name="INF_STOPPED" value="0" color="#ffcdab" />
+		<definedValue name="INF_RUNNING" value="1" color="#00CC11" />
 
-		<!-- Control Flow View -->
-		<line id="gdb/*" display="Status" />
-		
-	</view>
-	<stateprovider analysisid="polymtl.gdb.ust.sp">
+		<!-- Time Graph View -->
+		<line path="gdb/*">
+			<entry path="gdb/*">
+				<display type="constant" value="Status" />
+			</entry>
+		</line>		
+	</stateSystemView>
+	<stateProvider id="polymtl.gdb.ust.sp" version="1">
 		<head>
-			<tracetype id="org.eclipse.linuxtools.tmf.ui.type.ctf" />
-			<view id="org.eclipse.linuxtools.tmf.analysis.xml.sstimeview" />
+			<traceType id="org.eclipse.linuxtools.tmf.ui.type.ctf" />
+			<label value="GDB State System" />
 		</head>
 
 		<!-- StateValues -->
-		<stateValue name="INF_RUNNING" value="1" />
-		<stateValue name="INF_STOPPED" value="0" />
+		<definedValue name="INF_STOPPED" value="0" />
+		<definedValue name="INF_RUNNING" value="1" />
 
 		<location id="GDB_Status">
-			<attribute constant="gdb" />
-			<attribute eventfield="pid" />
-			<attribute constant="Status" />
+			<stateAttribute type="constant" value="gdb" />
+			<stateAttribute type="eventField" value="pid" />
+			<stateAttribute type="constant" value="Status" />
 		</location>
 
-		<eventHandler eventname="gdb:inf_forked">
+		<eventHandler eventName="gdb:inf_forked">
 			<stateChange>
-				<attribute location="GDB_Status" />
-				<value int="$INF_RUNNING" />
+				<stateAttribute type="location" value="GDB_Status" />
+				<stateValue type="int" value="$INF_RUNNING" />
 			</stateChange>
 		</eventHandler>
-		<eventHandler eventname="gdb:inf_stop">
+		<eventHandler eventName="gdb:inf_stop">
 			<stateChange>
-				<attribute location="GDB_Status" />
-				<value int="$INF_STOPPED" />
+				<stateAttribute type="location" value="GDB_Status" />
+				<stateValue type="int" value="$INF_STOPPED" />
 			</stateChange>
 		</eventHandler>
-		<eventHandler eventname="gdb:inf_cont">
+		<eventHandler eventName="gdb:inf_cont">
 			<stateChange>
-				<attribute location="GDB_Status" />
-				<value int="$INF_RUNNING" />
+				<stateAttribute type="location" value="GDB_Status" />
+				<stateValue type="int" value="$INF_RUNNING" />
 			</stateChange>
 		</eventHandler>
-		<eventHandler eventname="gdb:inf_step">
+		<eventHandler eventName="gdb:inf_step">
 			<stateChange>
-				<attribute location="GDB_Status" />
-				<value int="$INF_RUNNING" />
+				<stateAttribute type="location" value="GDB_Status" />
+				<stateValue type="int" value="$INF_RUNNING" />
 			</stateChange>
 		</eventHandler>
-		<eventHandler eventname="gdb:pgspace_switch">
+		<eventHandler eventName="gdb:pgspace_switch">
 			<stateChange>
-				<attribute constant="pgspace" />
-				<attribute constant="current_pgspace" />
-				<value eventfield="num" />
+				<stateAttribute type="constant" value="pgspace" />
+				<stateAttribute type="constant" value="current_pgspace" />
+				<stateValue type="eventField" value="num" />
 			</stateChange>
 		</eventHandler>
-	</stateprovider>
+	</stateProvider>
 </tmfxml>
