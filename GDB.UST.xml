@@ -26,11 +26,9 @@
 		<definedValue name="INF_RUNNING" value="1" color="#00CC11" />
 
 		<!-- Time Graph View -->
-		<line path="gdb/*">
-			<entry path="gdb/*">
-				<display type="constant" value="Status" />
-			</entry>
-		</line>		
+		<entry path="gdb/*">
+			<display type="constant" value="Status" />
+		</entry>	
 	</stateSystemView>
 	<stateProvider id="polymtl.gdb.ust.sp" version="1">
 		<head>
